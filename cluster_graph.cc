@@ -2,28 +2,33 @@
 #include <stdlib.h>
 #include "cluster_graph.h"
 
+// Well, I do not like these global variables. It is my old codes and I am lazy...
 size_t gc_max_cluster_size = 500;
 int gc_min_edge_density = 176; // 176/255 = 0.69
 int gc_strict_outgroup_level = 2;
+int gc_once_fail_mode = 0;
 
 // test whether an edge is valid.
-inline int gc_verify_edge(edgeinfo_t ei, CVertex *p, CVertex *q)
+inline int gc_verify_edge(edgeinfo_t ei, CVertex *p, CVertex *q, int is_set_closed = 0)
 {
-	if (p->v_set->size() > gc_max_cluster_size || q->v_set->size() > gc_max_cluster_size) return 0;
-	if ((ei&GC_EI_MASK) < gc_min_edge_density) return 0;
-	if (p->cat && q->cat) {
-		if (gc_strict_outgroup_level == 3) {
-			if (p->cat == q->cat && (p->cat == 0x1 || p->cat == 0x2 || p->cat == 0x4)) return 1;
-			if ((p->cat & q->cat) == 0) return 1;
-			return 0;
-		} else if (gc_strict_outgroup_level == 2) {
-			if (p->cat == q->cat) return (p->cat == 0x1 || p->cat == 0x2 || p->cat == 0x4)? 1 : 0;
-			if ((p->cat & q->cat) == 0 || (p->cat & q->cat) == 0x1) return 1;
-		} else if (gc_strict_outgroup_level == 1) {
-			return (p->cat != 0x7 && q->cat != 0x7)? 1 : 0;
+	int retval = 1;
+	if (gc_once_fail_mode && (p->is_closed || q->is_closed)) retval = 0;
+	else if (p->v_set->size() > gc_max_cluster_size || q->v_set->size() > gc_max_cluster_size) retval = 0;
+	else if ((ei&GC_EI_MASK) < gc_min_edge_density) retval = 0;
+	else if (p->cat && q->cat) {
+		if (gc_strict_outgroup_level == 3) { // the most stringent
+			if (p->cat == q->cat && (p->cat == 0x1 || p->cat == 0x2 || p->cat == 0x4)) retval = 1;
+			else if ((p->cat & q->cat) == 0) retval = 1;
+			else retval = 0;
+		} else if (gc_strict_outgroup_level == 2) { // less stringent. The default.
+			if (p->cat == q->cat) retval = (p->cat == 0x1 || p->cat == 0x2 || p->cat == 0x4)? 1 : 0;
+			else if ((p->cat & q->cat) == 0 || (p->cat & q->cat) == 0x1) retval =  1;
+		} else if (gc_strict_outgroup_level == 1) { // just for test. Do not use it.
+			retval = (p->cat != 0x7 && q->cat != 0x7)? 1 : 0;
 		}
 	}
-	return 1;
+	if (retval == 0 && gc_once_fail_mode && is_set_closed) p->is_closed = q->is_closed = 1;
+	return retval;
 }
 inline edgeinfo_t gc_cal_edge_info(edgeinfo_t ei1, edgeinfo_t ei2, size_t s1, size_t s2)
 {
@@ -298,9 +303,9 @@ void ClusterGraph::output(FILE *fpout, cvertex_t start)
 #endif
 			// calculate some basic statistic in the v_set
 			if (count != 1) {
-				fprintf(fpout, "%u\t%u\t%d\t%.3f\t%u\t", flag + start, start,
-						p->last>>GC_EI_OFFSET, (p->last&GC_EI_MASK)/GC_EI_MASK_float, unsigned(count));
-			} else fprintf(fpout, "%u\t%u\t0\t1.000\t1\t", flag + start, start);
+				fprintf(fpout, "%u\t%u\t%d\t%.3f\t%x\t%u\t", flag + start, start, p->last>>GC_EI_OFFSET,
+					(p->last&GC_EI_MASK)/GC_EI_MASK_float, p->cat, unsigned(count));
+			} else fprintf(fpout, "%u\t%u\t0\t1.000\t%x\t1\t", flag + start, start, p->cat);
 			for (iter = p->v_set->begin(); iter != p->v_set->end(); ++iter)
 				if (isfilled(iter)) fprintf(fpout, "%s,", bg_name_list[conv_list1[iter->key]]);
 			fputc('\n', fpout);

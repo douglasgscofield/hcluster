@@ -45,5 +45,6 @@ public:
 
 void free_all();
 size_t read_graph(FILE *fp, BasicGraph &, weight_t t, double st);
+void gc_read_category(FILE *fp, BasicGraph *bg);
 
 #endif // BASIC_GRAPH_H_
