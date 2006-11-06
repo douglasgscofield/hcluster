@@ -29,7 +29,7 @@ bool BasicGraph::add(bvertex_t v1, bvertex_t v2, weight_t w)
 			for (bvertex_t i = tmp2; i < total_vertices; ++i)
 				basic_graph[i].init();
 		}
-		if (!(gc_flag & GC_NO_CLUSTER) && edge_set.find(tmp, tmp_w)) {
+		if (!(gc_flag & GC_NO_CLUSTER) && edge_set.find(tmp, &tmp_w)) {
 			if (w <= tmp_w) return false;
 		} else {
 			basic_graph[v1].add(v2, w);
@@ -103,11 +103,13 @@ bvertex_t BasicGraph::main(FILE *fp)
 			fflush(stderr);
 		}
 		// cluster
+		bvertex_t v_to_add;
 		for (j = 0; j < count; ++j) {
-			r1 = basic_graph + rst[j];
-			for (r2 = r1->list; r2 < r1->list + r1->num; ++r2) {
-				if (rst[j] < r2->v) cgraph.add(rst[j], r2->v, r2->w);
-			}
+			v_to_add = rst[j];
+			r1 = basic_graph + v_to_add;
+			for (r2 = r1->list; r2 < r1->list + r1->num; ++r2)
+				if (v_to_add < r2->v) cgraph.add(v_to_add, r2->v, r2->w);
+			if (r1->cat) cgraph.assign_category_ext(v_to_add, r1->cat);
 		}
 		count2 = cgraph.flag_all();
 		cgraph.output(fp, tmp2);

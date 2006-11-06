@@ -7,11 +7,13 @@
 #include "basic.h"
 #include "cluster_graph.h"
 
-// (bvertex_t<<16)|bvertex_t must be bit32_t for it will be stored
-// in my hash (see below cal_edge()). I think this will be revised later
-
+#ifdef GRAPH64                                                                                                                                 
 typedef bit32_t bvertex_t;
-typedef bit64_t	bedge_t;
+typedef bit64_t bedge_t;
+#else                                                                                                                                          
+typedef bit16_t bvertex_t;
+typedef bit32_t bedge_t;
+#endif
 
 class BasicGraph
 {
@@ -28,6 +30,10 @@ public:
 	~BasicGraph(void);
 	void init(weight_t t, double);
 	bool add(bvertex_t v1, bvertex_t v2, weight_t w);
+	void assign_category(bvertex_t v, unsigned char cat)
+	{
+		if (v < max_vertices) basic_graph[v].cat = cat;
+	}
 	bvertex_t main(FILE *fp = stdout);
 };
 

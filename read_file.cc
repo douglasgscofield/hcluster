@@ -8,6 +8,21 @@ char **bg_name_list = 0;
 unsigned gc_flag = 0;
 hash_map_char<bvertex_t> bg_name_hash;
 
+void gc_read_category(FILE *fp, BasicGraph *bg)
+{
+	bit32_t tmp;
+	bvertex_t v;
+	char tmp1[1024];
+	while (!feof(fp)) {
+		fscanf(fp, "%s%u", tmp1, &tmp);
+		if (!bg_name_hash.find(tmp1, &v)) {
+			fprintf(stderr, "[gc_read_category] '%s' is not present in the graph.\n", tmp1);
+			continue;
+		}
+		bg->assign_category(v, (unsigned char)tmp);
+	}
+}
+
 size_t read_graph(FILE *fp, BasicGraph &bg, weight_t t, double st)
 {
 	bit32_t tmp;
@@ -20,7 +35,7 @@ size_t read_graph(FILE *fp, BasicGraph &bg, weight_t t, double st)
 	while (!feof(fp)) {
 		fscanf(fp, "%s%s%u", tmp1, tmp2, &tmp);
 		++count;
-		if (!bg_name_hash.find(tmp1, v1)) {
+		if (!bg_name_hash.find(tmp1, &v1)) {
 			v1 = bg_name_hash.size();
 			bg_name_hash.insert(tmp1, v1);
 			if (v1 == bg_nl_max) {
@@ -32,7 +47,7 @@ size_t read_graph(FILE *fp, BasicGraph &bg, weight_t t, double st)
 			bg_name_list[v1] = (char*)malloc(strlen(tmp1) + 1);
 			strcpy(bg_name_list[v1], tmp1);
 		}
-		if (!bg_name_hash.find(tmp2, v2)) {
+		if (!bg_name_hash.find(tmp2, &v2)) {
 			v2 = bg_name_hash.size();
 			bg_name_hash.insert(tmp2, v2);
 			if (v2 == bg_nl_max) {

@@ -2,7 +2,6 @@
 #define LIH_SVECTOR_H_
 
 #include <malloc.h>
-#include "qsort.h"
 
 #ifndef LIH_BLOCK_SIZE
 #define LIH_BLOCK_SIZE 256
@@ -39,7 +38,6 @@ public:
 	inline TYPE *push_null() { return push_back(); }
 	inline void rewind() { num = 0; };
 	inline void clear() { rewind(); };
-	inline void sort() { quick_sort(array, num); };
 	inline void resize(size_t new_size)
 	{
 		if (new_size < max) {

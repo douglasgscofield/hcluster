@@ -3,14 +3,14 @@
 #define HASH_COM_H_
 
 #include <string.h>
-#include <malloc.h>
+#include <stdlib.h>
 
 typedef unsigned int bit32_t;
 typedef unsigned long long bit64_t;
 typedef unsigned short bit16_t;
 
-const double __lih_HASH_UPPER = 0.90;
-const int __lih_HASH_PRIME_SIZE = 30;
+const double __lih_HASH_UPPER = 0.70;
+const int __lih_HASH_PRIME_SIZE = 32;
 
 /* kinds of hash functions for string */
 
@@ -143,7 +143,7 @@ inline bool __lih_key_equal(bit16_t a, bit16_t b)
 
 static const bit32_t __lih_prime_list[__lih_HASH_PRIME_SIZE] =
 {
-  0ul,          3ul,          53ul,         97ul,         193ul,
+  0ul,          3ul,          11ul,         23ul,         53ul,         97ul,         193ul,
   389ul,        769ul,        1543ul,       3079ul,       6151ul,
   12289ul,      24593ul,      49157ul,      98317ul,      196613ul,
   393241ul,     786433ul,     1572869ul,    3145739ul,    6291469ul,
@@ -160,16 +160,6 @@ inline TYPE *__lih_hash_insert_aux(TYPE *vkp, size_t m, KeyType key)
 	i = k % m;
 	inc = 1 + k % (m - 1);
 	
-/*	this line will be useful for fixed-size hash
-	size_t last = (i + (m - 1) * inc) % m;
-	while (i != last && !vkp[i].isempty && !__lih_key_equal(vkp[i].key, key)) {
-		if (vkp[i].isdel) site = i;
-		if (i + inc >= m) {
-			i = i + inc - m;
-		} else i += inc;
-	}*/ 
-	// I think the codes below is more appropriate, for the "last" above
-	// may miss one element in the hash.
 	bit32_t last = i;
 	while (!vkp[i].isempty && !__lih_key_equal(vkp[i].key, key)) {
 		if (vkp[i].isdel) site = i;
@@ -189,12 +179,6 @@ inline TYPE *__lih_hash_search_aux(TYPE *vkp, size_t m, KeyType key)
 	k = __lih_hash_fun(key);
 	i = k % m;
 	inc = 1 + k % (m - 1);
-/*	size_t last = (i + (m - 1) * inc) % m;
-	while (i != last && !vkp[i].isempty && !__lih_key_equal(vkp[i].key, key)) {
-		if (i + inc >= m) {
-			i = i + inc - m;
-		} else i += inc;
-	}*/ // I think the codes below is more appropriate.
 	bit32_t last = i;
 	while (!vkp[i].isempty && !__lih_key_equal(vkp[i].key, key)) {
 		if (i + inc >= m) {
@@ -205,15 +189,15 @@ inline TYPE *__lih_hash_search_aux(TYPE *vkp, size_t m, KeyType key)
 	return vkp + i;
 }
 template <class KeyType, class TYPE>
-inline bool __lih_hash_erase_aux(TYPE *vkp, size_t m, KeyType key)
+inline TYPE *__lih_hash_erase_aux(TYPE *vkp, size_t m, KeyType key)
 {
 	TYPE *p;
 	p = __lih_hash_search_aux(vkp, m, key);
 	if (p && !p->isempty) {
 		if (p->isdel) return false;
 		p->isdel = true;
-		return true;
-	} else return false;
+		return p;
+	} else return 0;
 }
 template <class TYPE>
 inline void __lih_hash_clear_aux(TYPE *vkp, size_t m)
@@ -231,35 +215,8 @@ inline size_t __lih_hash_cal_size(size_t m)
 	return __lih_prime_list[t+1];
 }
 
-template <class TYPE>
-class __lih_hash_base_iterator 
-{
-protected:
-	TYPE *cur, *end;
-public:
-	__lih_hash_base_iterator(TYPE *i, TYPE *e)
-	{
-		cur = i;
-		end = e;
-		while (cur != end) {
-			if (cur->isempty || cur->isdel) ++cur;
-				else return;
-		}
-	}
-	__lih_hash_base_iterator() {};
-	~__lih_hash_base_iterator() {};
-	inline void inc(void)
-	{
-		if (cur == end) return;
-		cur++;
-		while (cur != end) {
-			if (cur->isempty || cur->isdel) ++cur;
-				else return;
-		}
-		return;
-	}
-	inline bool not_end() { return cur != end; };
-};
+#define isfilled(p) (!(p)->isempty && !(p)->isdel)
+#define isempty(p) ((p)->isempty)
 
 template <class TYPE>
 class __lih_hash_base_class
@@ -268,7 +225,7 @@ protected:
 	size_t curr_m, count_n, upper_bound;
 	TYPE *val_key_pair;
 public:
-	typedef __lih_hash_base_iterator<TYPE> iterator;
+	typedef TYPE* iterator;
 	__lih_hash_base_class(void)
 	{
 		val_key_pair = 0;
@@ -282,8 +239,8 @@ public:
 		__lih_hash_clear_aux(val_key_pair, curr_m);
 		count_n = 0;
 	}
-	inline size_t size(void) { return count_n; };
-	inline size_t capacity(void) { return curr_m; };
+	inline size_t size(void) const { return count_n; };
+	inline size_t capacity(void) const { return curr_m; };
 	inline void free()
 	{
 		::free(val_key_pair);
@@ -292,6 +249,8 @@ public:
 		count_n = 0;
 		upper_bound = 0;
 	}
+	inline iterator begin() { return val_key_pair; }
+	inline iterator end() { return val_key_pair + curr_m; }
 };
 
 #endif // HASH_COM_H_

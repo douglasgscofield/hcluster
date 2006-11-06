@@ -2,71 +2,70 @@
 #include <stdlib.h>
 #include "cluster_graph.h"
 
-int gc_weight_w = 2;
 size_t gc_max_cluster_size = 500;
+int gc_min_edge_density = 176; // 176/255 = 0.69
+int gc_strict_outgroup_level = 2;
 
-static double CG_satur_thres = 0.70;
-
-static bool cal_vertex_info(VertexInfo *dest, const CVertex *src1,
-		const CVertex *src2, hash_map_misc<weight_t, cedge_t> &edge_set, bool flag = true)
+// test whether an edge is valid.
+inline int gc_verify_edge(edgeinfo_t ei, CVertex *p, CVertex *q)
 {
-	cedge_t n_edge, etmp;
-	weight_t w;
-	cedge_t tmp;
-
-	if (src1->v_set->size() + src2->v_set->size() > gc_max_cluster_size)
-		return false;
-	etmp = src1->v_set->size() * src2->v_set->size();
-	hash_set_misc<cvertex_t>::iterator p1, p2;
-	tmp = 0;
-	n_edge = 0;
-	for (p1 = src1->v_set->begin(); p1.not_end(); p1.inc()) {
-		for (p2 = src2->v_set->begin(); p2.not_end(); p2.inc()) {
-			if (edge_set.find(cal_edge(*p1, *p2), w)) {
-				tmp += w;
-				++n_edge;
-			}
+	if (p->v_set->size() > gc_max_cluster_size || q->v_set->size() > gc_max_cluster_size) return 0;
+	if ((ei&GC_EI_MASK) < gc_min_edge_density) return 0;
+	if (p->cat && q->cat) {
+		if (gc_strict_outgroup_level == 3) {
+			if (p->cat == q->cat && (p->cat == 0x1 || p->cat == 0x2 || p->cat == 0x4)) return 1;
+			if ((p->cat & q->cat) == 0) return 1;
+			return 0;
+		} else if (gc_strict_outgroup_level == 2) {
+			if (p->cat == q->cat) return (p->cat == 0x1 || p->cat == 0x2 || p->cat == 0x4)? 1 : 0;
+			if ((p->cat & q->cat) == 0 || (p->cat & q->cat) == 0x1) return 1;
+		} else if (gc_strict_outgroup_level == 1) {
+			return (p->cat != 0x7 && q->cat != 0x7)? 1 : 0;
 		}
 	}
-	if (flag && double(n_edge) / etmp < CG_satur_thres)
-		return false; // cannot be merged
-	dest->all = src1->vi.all + src2->vi.all + etmp;
-	dest->num = src1->vi.num + src2->vi.num + n_edge;
-	dest->w = weight_t((double(src1->vi.w) * src1->vi.num + src2->vi.w 
-				* src2->vi.num + tmp) / dest->num + 0.5);
-	return true;
+	return 1;
+}
+inline edgeinfo_t gc_cal_edge_info(edgeinfo_t ei1, edgeinfo_t ei2, size_t s1, size_t s2)
+{
+	bit32_t weight_all, n_edge_all;
+	edgeinfo_t edge_info;
+	weight_all = ((bit32_t)ei1>>GC_EI_OFFSET) * s1 + ((bit32_t)ei2>>GC_EI_OFFSET) * s2;
+	n_edge_all = (bit32_t)(ei1&GC_EI_MASK) * s1 + (bit32_t)(ei2&GC_EI_MASK) * s2;
+	edge_info = ((edgeinfo_t)((double)weight_all / (s1 + s2) + 0.5) << GC_EI_OFFSET)
+				| ((edgeinfo_t)((double)n_edge_all / (s1 + s2) + 0.5));
+	return edge_info;
 }
 
 #ifdef LIH_DEBUG
 void ClusterGraph::show_vertex(cvertex_t v)
 {
 	CVertex *p = cluster_graph + v;
-	printf("Vertex: %u; vi = (%u, %u, %u); opt = (%u, %u, %u); opt_ind = %u\n",
-			v, p->vi.w, p->vi.num, p->vi.all,
-			p->opt.w, p->opt.num, p->opt.all, p->opt_ind);
-	hash_set_misc<cvertex_t>::iterator iter;
+	printf("Vertex: %u; opt = (%u, %u); optidx = %u\n",
+			v, p->opt>>GC_EI_OFFSET, int(100.0 * (p->opt&GC_EI_MASK) / GC_EI_MASK_float + 0.5), p->optidx);
+	cvertices_t::iterator iter;
 	printf("v_set: %5u   ", p->v_set->size());
-	for (iter = p->v_set->begin(); iter.not_end(); iter.inc())
-		printf("%5u", *iter);
+	for (iter = p->v_set->begin(); iter != p->v_set->end(); ++iter)
+		if (isfilled(iter)) printf("%5u", iter->key);
 	printf("\nn_set: %5u   ", p->n_set->size());
-	for (iter = p->n_set->begin(); iter.not_end(); iter.inc())
-		printf("%5d", *iter);
+	cneighbour_t::iterator iter_map;
+	for (iter_map = p->n_set->begin(); iter_map != p->n_set->end(); ++iter_map)
+		if (isfilled(iter_map)) printf("%5d", iter_map->key);
 	printf("\n");
 }
 #endif // LIH_DEBUG
 
-bool ClusterGraph::add(bit32_t v1, bit32_t v2, weight_t w)
+bool ClusterGraph::add(cvertex_t v1, cvertex_t v2, weight_t w)
 {
 	cvertex_t tmp1, tmp2;
 	
 	if (v1 == v2 || w < threshold) return false;
 	
-	if (!conv_list2.find(v1, tmp1)) {
+	if (!conv_list2.find(v1, &tmp1)) {
 		tmp1 = conv_list1.size();
 		conv_list1.push_back(v1);
 		conv_list2.insert(v1, tmp1);
 	}
-	if (!conv_list2.find(v2, tmp2)) {
+	if (!conv_list2.find(v2, &tmp2)) {
 		tmp2 = conv_list1.size();
 		conv_list1.push_back(v2);
 		conv_list2.insert(v2, tmp2);
@@ -89,14 +88,24 @@ bool ClusterGraph::add(bit32_t v1, bit32_t v2, weight_t w)
 	// add edge and vertices
 	cedge_t tmp_e = cal_edge(tmp1, tmp2);
 	weight_t tmp_w;
-	if (edge_set.find(tmp_e, tmp_w)) {
+	if (edge_set.find(tmp_e, &tmp_w)) {
 		if (w <= tmp_w) return false;
 	} else {
-		cluster_graph[tmp1].n_set->insert(tmp2);
-		cluster_graph[tmp2].n_set->insert(tmp1);
+		cluster_graph[tmp1].n_set->insert(tmp2, ((edgeinfo_t)w<<GC_EI_OFFSET)|GC_EI_MASK);
+		cluster_graph[tmp2].n_set->insert(tmp1, ((edgeinfo_t)w<<GC_EI_OFFSET)|GC_EI_MASK);
 	}
 	edge_set.insert(tmp_e, w);
 	return true;
+}
+cvertex_t ClusterGraph::assign_category_ext(cvertex_t v, unsigned char cat)
+{
+	cvertex_t tmp;
+	if (!conv_list2.find(v, &tmp)) {
+		fprintf(stderr, "[assign_category_ext] vertex '%d' is not present in the graph.\n", v);
+		return 0;
+	}
+	cluster_graph[tmp].cat = cat;
+	return tmp;
 }
 void ClusterGraph::clear()
 {
@@ -107,87 +116,87 @@ void ClusterGraph::clear()
 	for (cvertex_t v = 0; v < total_vertices; ++v)
 		cluster_graph[v].clear(v);
 }
-inline void ClusterGraph::set_max(cvertex_t v, CVertex *p)
+inline void ClusterGraph::set_max(cvertex_t v)
 {
-	CVertex *q;
-	hash_set_misc<cvertex_t>::iterator iter;
-	VertexInfo tmp_vi;
-	p->opt_ind = max_vertices;
-	p->opt_q = 0; p->opt.w = 0; p->opt.num = 0;
-
-	for (iter = p->n_set->begin(); iter.not_end(); iter.inc()) {
-		q = cluster_graph + *iter;
-		if (v < *iter) {
-			cal_vertex_info(&tmp_vi, p, q, edge_set);
-			if (p->opt_q < gc_cal_q(tmp_vi)) {
-				p->opt_ind = *iter;
-				p->opt = tmp_vi;
-				p->opt_q = gc_cal_q(tmp_vi);
+	cneighbour_t::iterator iter;
+	CVertex *p = cluster_graph + v;
+	p->optidx = max_vertices; p->opt = 0;
+	for (iter = p->n_set->begin(); iter != p->n_set->end(); ++iter) {
+		if (isfilled(iter) && v < iter->key) {
+			if (p->opt < iter->val) {
+				p->optidx = iter->key;
+				p->opt = iter->val;
 			}
 		}
 	}
 }
-void ClusterGraph::merge(cvertex_t v1, cvertex_t v2, VertexInfo *rst_vi) // v1 < v2
+void ClusterGraph::merge(cvertex_t v1, cvertex_t v2) // v1 < v2
 {
 	CVertex *src1, *src2, *p;
-	hash_set_misc<cvertex_t>::iterator iter;
-	VertexInfo tmp_vi;
+	cneighbour_t::iterator iter;
 
 	src1 = cluster_graph + v1;
 	src2 = cluster_graph + v2;
+	src1->last = src1->opt;
 
-	// calculate vertex information and store it in src->vi
-	if (rst_vi == 0) {
-		cal_vertex_info(&tmp_vi, src1, src2, edge_set);
-		//if (tmp_vi.all == 0)
-		//	fprintf(stderr, "(%u,%u) : (%u,%u) (%u,%u) (%u,%u)\n", v1, v2, tmp_vi.num, tmp_vi.all,
-		//			src1->vi.num, src1->vi.all, src2->vi.num, src2->vi.all);
-		src1->vi = tmp_vi;
-	} else src1->vi = *rst_vi;
+	{ // Update all related neighbour set (n_set). Note that invalid edges will be removed at the next step, but not here.
+		edgeinfo_t ei1, ei2, edge_info;
+		cvertices_t::iterator iter_set;
 
-	// join set src2->v_set into src1->v_set, and so it is with n_set
-	for (iter = src2->v_set->begin(); iter.not_end(); iter.inc())
-		src1->v_set->insert(*iter);
-	for (iter = src2->n_set->begin(); iter.not_end(); iter.inc()) {
-		cluster_graph[*iter].n_set->erase(v2);
-		if (*iter != v1) {
-			src1->n_set->insert(*iter);
-			cluster_graph[*iter].n_set->insert(v1);
+		for (iter = src1->n_set->begin(); iter != src1->n_set->end(); ++iter) {
+			if (!isfilled(iter) || iter->key == v2) continue;
+			ei1 = iter->val;
+			p = cluster_graph + iter->key;
+			if (src2->n_set->find(iter->key, &ei2)) // iter_map->key is also present in v2
+				edge_info = gc_cal_edge_info(ei1, ei2, src1->v_set->size(), src2->v_set->size());
+			else edge_info = gc_cal_edge_info(ei1, 0, src1->v_set->size(), src2->v_set->size());
+			iter->val = edge_info;
+			p->n_set->insert(v1, edge_info);
 		}
+		for (iter = src2->n_set->begin(); iter != src2->n_set->end(); ++iter) {
+			if (!isfilled(iter)) continue;
+			p = cluster_graph + iter->key;
+			p->n_set->erase(v2);
+			if (iter->key == v1) continue;
+			ei2 = iter->val;
+			if (!src1->n_set->find(iter->key, &ei1)) {// iter_map->key is not present in v1
+				edge_info = gc_cal_edge_info(ei2, 0, src2->v_set->size(), src1->v_set->size());
+				src1->n_set->insert(iter->key, edge_info);
+				p->n_set->insert(v1, edge_info);
+			} // else, n_set has already been updated
+		}
+		for (iter_set = src2->v_set->begin(); iter_set != src2->v_set->end(); ++iter_set)
+			if (isfilled(iter_set)) src1->v_set->insert(iter_set->key);
 	}
-	src2->v_set->free(); // free the memory
+	// set src1->cat
+	src1->cat |= src2->cat;
+	// delete vertex src2
+	src2->v_set->free();
 	src2->n_set->free();
-	src2->opt_ind = max_vertices; // close this vertex
+	src2->optidx = max_vertices; src2->opt = 0; // close this vertex
 
-	// if no vertex greater than the current is found,
-	// this vertex will be closed.
-	src1->opt_ind = max_vertices;
-	src1->opt.num = 0; src1->opt.w = 0; src1->opt_q = 0;
-
-	// re-calculate the related edges
-	for (iter = src1->n_set->begin(); iter.not_end(); iter.inc()) {
-		p = cluster_graph + *iter;
-		if (!cal_vertex_info(&tmp_vi, p, src1, edge_set)) { // tmp_vi is modified here
-			// delete this edge
-			src1->n_set->erase(*iter);
-			p->n_set->erase(v1);
-			if (p->opt_ind == v1 || p->opt_ind == v2)
-				set_max(*iter, p); // recalculate the optimal node
+	// remove invalid edges, and reset affected "->opt_ind"
+	src1->optidx = max_vertices; src1->opt = 0;
+	for (iter = src1->n_set->begin(); iter != src1->n_set->end(); ++iter) {
+		if (!isfilled(iter)) continue;
+		p = cluster_graph + iter->key;
+		if (!gc_verify_edge(iter->val, src1, p)) { // delete this edge
+			src1->n_set->erase(iter->key); // remove iter->key from v1
+			p->n_set->erase(v1); // remove v1 from iter->key
+			if (p->optidx == v1 || p->optidx == v2)
+				set_max(iter->key); // recalculate the optimal vertex
 			continue;
 		}
-		if (p->opt_ind == v1 || p->opt_ind == v2) set_max(*iter, p); // p->opt_ind != v1
-		if (v1 < *iter) { // reset "src1->opt"
-			if (src1->opt_q < gc_cal_q(tmp_vi)) {
-				src1->opt_ind = *iter;
-				src1->opt = tmp_vi;
-				src1->opt_q = gc_cal_q(tmp_vi);
+		if (p->optidx == v1 || p->optidx == v2) set_max(iter->key);
+		if (v1 < iter->key) { // reset "src1->opt"
+			if (src1->opt < iter->val) {
+				src1->optidx = iter->key;
+				src1->opt = iter->val;
 			}
-//			if (p->opt_ind == v2) set_max(*iter, p); // p->opt_ind != v1
 		} else { // reset "p->opt"
-			if (p->opt_q < gc_cal_q(tmp_vi)) {
-				p->opt_ind = v1;
-				p->opt = tmp_vi;
-				p->opt_q = gc_cal_q(tmp_vi);
+			if (p->opt < iter->val) {
+				p->optidx = v1;
+				p->opt = iter->val;
 			}
 		}
 	}
@@ -195,7 +204,7 @@ void ClusterGraph::merge(cvertex_t v1, cvertex_t v2, VertexInfo *rst_vi) // v1 <
 void ClusterGraph::init(weight_t thres, double st)
 {
 	threshold = thres;
-	CG_satur_thres = st;
+	gc_min_edge_density = (int)(GC_EI_MASK * st + 0.5);
 }
 ClusterGraph::~ClusterGraph()
 {
@@ -206,32 +215,6 @@ ClusterGraph::~ClusterGraph()
 	}
 	free(cluster_graph);
 }
-void ClusterGraph::init_opt()
-{
-	CVertex *p;
-	weight_t opt;
-	cvertex_t v, opt_ind;
-	weight_t w;
-	hash_set_misc<cvertex_t>::iterator iter;
-
-	for (v = 0; v < max_vertices; ++v) {
-		opt = 0;
-		opt_ind = max_vertices;
-		p = cluster_graph + v;
-		for (iter = p->n_set->begin(); iter.not_end(); iter.inc()) {
-			if (*iter > v) {
-				edge_set.find(cal_edge2(v, *iter), w);
-				if (w > opt) {
-					opt = w; opt_ind = *iter;
-				}
-			}
-		}
-		p->opt_ind = opt_ind;
-		p->opt.w = opt;
-		p->opt.num = p->opt.all = 1;
-		p->opt_q = gc_cal_q(p->opt);
-	}
-}
 cvertex_t ClusterGraph::flag_all()
 {
 	// initialize the opt and opt_ind in cluster_graph
@@ -241,11 +224,10 @@ cvertex_t ClusterGraph::flag_all()
 		fflush(stderr);
 	}
 	
-	init_opt();
+	for (cvertex_t v = 0; v < max_vertices; ++v) set_max(v);
 
-	cvertex_t opt_ind, flag = 0;
-	bit32_t opt_q;
-	hash_set_misc<cvertex_t>::iterator iter;
+	cvertex_t optidx, flag = 0;
+	edgeinfo_t opt;
 	CVertex *p;
 	cvertex_t count = 0;
 	
@@ -255,28 +237,26 @@ cvertex_t ClusterGraph::flag_all()
 #endif // LIH_DEBUG
 
 	do {
-		VertexInfo opt;
-
-		opt_ind = max_vertices; opt_q = 0;
+		optidx = max_vertices; opt = 0;
 		for (p = cluster_graph; p < cluster_graph + max_vertices; ++p) {
 			// if the vertex is not closed
-			if (p->opt_ind != max_vertices && opt_q < p->opt_q) {
-				opt_q = p->opt_q;
-				opt_ind = p - cluster_graph;
+			if (p->optidx != max_vertices && opt < p->opt) {
+				opt = p->opt;
+				optidx = p - cluster_graph;
 			}
 		}
-		if (opt_ind != max_vertices) { // find an optimal one
-			merge(opt_ind, cluster_graph[opt_ind].opt_ind, &(cluster_graph[opt_ind].opt));
+		if (optidx != max_vertices) { // find an optimal one
+			merge(optidx, cluster_graph[optidx].optidx);
 			++count;
 #ifdef LIH_DEBUG
-			show_vertex(opt_ind);
+			show_vertex(optidx);
 #endif // LIH_DEBUG
 		}
 		if ((gc_flag &GC_VERBOSE) && count%1000 == 0) {
 			fprintf(stderr, "%u times of merge occur\n", count);
 			fflush(stderr);
 		}
-	} while (opt_ind != max_vertices);
+	} while (optidx != max_vertices);
 
 #ifdef LIH_DEBUG
 	printf("END OF CLUSTER\n");
@@ -288,52 +268,38 @@ cvertex_t ClusterGraph::flag_all()
 	}
 	return flag;
 }
-void ClusterGraph::output(FILE *fpout, bit32_t start)
+void ClusterGraph::output(FILE *fpout, cvertex_t start)
 {
 	extern char **bg_name_list;
 	CVertex *p;
-	hash_set_misc<cvertex_t>::iterator iter, iter2;
-	bit32_t flag = 0;
+	cvertices_t::iterator iter, iter2;
+	cvertex_t flag = 0;
 	size_t count;
-	svector<weight_t> tmp_array;
 	weight_t tmp_w;
-	bit64_t sum;
 
 	for (p = cluster_graph; p < cluster_graph + max_vertices; ++p) {
 		if (p->v_set->size() && bg_name_list[conv_list1[p - cluster_graph]]) {
 			count = p->v_set->size();
 			if (gc_flag & GC_DETAIL) fputc('>', fpout);
 			// calculate some basic statistic in the v_set
-			tmp_array.rewind();
-			sum = 0;
 			if (count != 1) {
-				for (iter = p->v_set->begin(); iter.not_end(); iter.inc()) {
-					for (iter2 = p->v_set->begin(); iter2.not_end(); iter2.inc()) {
-						if (*iter < *iter2 && edge_set.find(cal_edge2(*iter, *iter2), tmp_w)) {
-							 tmp_array.push_back(tmp_w);
-							 sum += tmp_w;
-						}
-					}
-				}
-				tmp_array.sort();
-				fprintf(stderr, "*** %d\t%d\n", p->vi.num, p->vi.all);
-				fprintf(fpout, "%u\t%u\t%d\t%d\t%.3f\t%u\t", flag + start, start,
-						int(double(sum)/tmp_array.size()+0.5),
-						int(tmp_array[tmp_array.size()/2]),
-						double(p->vi.num)/p->vi.all, unsigned(count));
-			} else fprintf(fpout, "%u\t%u\t0\t0\t1.000\t1\t", flag + start, start);
-			for (iter = p->v_set->begin(); iter.not_end(); iter.inc())
-				fprintf(fpout, "%s,", bg_name_list[conv_list1[*iter]]);
+				fprintf(fpout, "%u\t%u\t%d\t%.3f\t%u\t", flag + start, start,
+						p->last>>GC_EI_OFFSET, (p->last&GC_EI_MASK)/GC_EI_MASK_float, unsigned(count));
+			} else fprintf(fpout, "%u\t%u\t0\t1.000\t1\t", flag + start, start);
+			for (iter = p->v_set->begin(); iter != p->v_set->end(); ++iter)
+				if (isfilled(iter)) fprintf(fpout, "%s,", bg_name_list[conv_list1[iter->key]]);
 			fputc('\n', fpout);
 			++flag;
 			if (!(gc_flag & GC_DETAIL)) continue;
 			// output detailed edge information
 			if (count == 1) { fprintf(fpout, "//\n"); continue; }
-			for (iter = p->v_set->begin(); iter.not_end(); iter.inc()) {
-				for (iter2 = p->v_set->begin(); iter2.not_end(); iter2.inc()) {
-					if (*iter < *iter2 && edge_set.find(cal_edge2(*iter, *iter2), tmp_w))
-						fprintf(fpout, "%s\t%s\t%d\n", bg_name_list[conv_list1[*iter]],
-								bg_name_list[conv_list1[*iter2]], tmp_w);
+			for (iter = p->v_set->begin(); iter != p->v_set->end(); ++iter) {
+				if (!isfilled(iter)) continue;
+				for (iter2 = p->v_set->begin(); iter2 != p->v_set->end(); ++iter2) {
+					if (!isfilled(iter2)) continue;
+					if (iter->key < iter2->key && edge_set.find(cal_edge2(iter->key, iter2->key), &tmp_w))
+						fprintf(fpout, "%s\t%s\t%d\n", bg_name_list[conv_list1[iter->key]],
+								bg_name_list[conv_list1[iter2->key]], tmp_w);
 				}
 			}
 			fprintf(fpout, "//\n");
