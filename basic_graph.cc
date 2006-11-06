@@ -2,7 +2,12 @@
 #include <stdlib.h>
 #include "basic_graph.h"
 
-BasicGraph::~BasicGraph() { free(basic_graph); }
+BasicGraph::~BasicGraph()
+{
+	for (size_t i = 0; i < total_vertices; ++i)
+		free(basic_graph[i].list);
+	free(basic_graph);
+}
 void BasicGraph::init(weight_t t, double s)
 {
 	threshold = t;

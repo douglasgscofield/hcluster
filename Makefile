@@ -1,5 +1,5 @@
 CC=			g++
-CFLAGS=		-O2 -Wall #-g -pg #-DGRAPH64
+CFLAGS=		-Wall -g -pg -DLIH_DEBUG #-DGRAPH64
 OBJS=		cluster_graph.o read_file.o basic_graph.o
 
 %.o:%.cc

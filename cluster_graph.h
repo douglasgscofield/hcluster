@@ -22,30 +22,37 @@ struct VertexInfo
 	VertexInfo() { w = 0; num = 0; all = 0; };
 	inline void clear() { w = 0; num = 0; all = 0; };
 };
-inline bool operator< (const VertexInfo &e1, const VertexInfo &e2)
+
+inline bit32_t gc_cal_q(const VertexInfo &v)
 {
-	// Note: 100*e1.num may cause overflow for some special graph.
-	if (100 * e1.num / (e1.all + 1) + e1.w * gc_weight_w <
-		100 * e2.num / (e2.all + 1) + e2.w * gc_weight_w) return true;
-	return false;
+	return (bit32_t)100 * v.num / (v.all + 1) + v.w * gc_weight_w;
 }
+
+//inline bool operator< (const VertexInfo &e1, const VertexInfo &e2)
+//{
+	// Note: 100*e1.num may cause overflow for some special graph.
+//	if (100 * e1.num / (e1.all + 1) + e1.w * gc_weight_w <
+//		100 * e2.num / (e2.all + 1) + e2.w * gc_weight_w) return true;
+//	return false;
+//}
 
 struct CVertex
 {
 	VertexInfo vi, opt;
 	cvertex_t opt_ind;
+	bit32_t opt_q;
 	hash_set_misc<cvertex_t> *v_set; // the contracted vertices
 	hash_set_misc<cvertex_t> *n_set; // the neighbours
 	inline void init(cvertex_t i)
 	{
-		vi.clear(); opt.clear();
+		vi.clear(); opt.clear(); opt_q = 0;
 		v_set = new hash_set_misc<cvertex_t>;
 		n_set = new hash_set_misc<cvertex_t>;
 		v_set->insert(i);
 	}
 	inline void clear(cvertex_t i)
 	{
-		vi.clear(); opt.clear();
+		vi.clear(); opt.clear(); opt_q = 0;
 		v_set->free();
 		n_set->free();
 		v_set->insert(i);
@@ -64,7 +71,7 @@ protected:
 	svector<bit32_t> conv_list1;
 	hash_map_misc<cvertex_t, bit32_t> conv_list2;
 	hash_map_misc<weight_t, cedge_t> edge_set;
-	void merge(cvertex_t v1, cvertex_t v2);
+	void merge(cvertex_t v1, cvertex_t v2, VertexInfo *rst_vi = 0);
 	void init_opt();
 public:
 	ClusterGraph() { cluster_graph = 0; total_vertices = max_vertices = 0; };
