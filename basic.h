@@ -10,7 +10,9 @@ const int BG_BLOCK_SIZE = 32;
 const int BG_GRAPH_BLOCK_SIZE = 1024;
 
 const unsigned GC_VERBOSE = 0x0001;
+#ifndef LH3_SAVE_MEMORY
 const unsigned GC_DETAIL = 0x0002;
+#endif
 const unsigned GC_NO_CLUSTER = 0x0004;
 
 typedef unsigned char weight_t;
@@ -44,6 +46,7 @@ struct BasicVertex
 	}
 };
 
+#ifndef LH3_SAVE_MEMORY
 #ifdef GRAPH64
 inline bit64_t cal_edge(bit32_t v1, bit32_t v2)
 {
@@ -65,6 +68,7 @@ inline bit32_t cal_edge2(bit16_t v1, bit16_t v2) // v1 < v2
 	return (bit32_t(v1) << 16) | v2;
 }
 #endif
+#endif // LH3_SAVE_MEMORY
 
 extern unsigned gc_flag;
 void free_all();

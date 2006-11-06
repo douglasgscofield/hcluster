@@ -86,15 +86,19 @@ bool ClusterGraph::add(cvertex_t v1, cvertex_t v2, weight_t w)
 			cluster_graph[i].init(i);
 	}
 	// add edge and vertices
+#ifndef LH3_SAVE_MEMORY
 	cedge_t tmp_e = cal_edge(tmp1, tmp2);
 	weight_t tmp_w;
 	if (edge_set.find(tmp_e, &tmp_w)) {
 		if (w <= tmp_w) return false;
 	} else {
+#endif
 		cluster_graph[tmp1].n_set->insert(tmp2, ((edgeinfo_t)w<<GC_EI_OFFSET)|GC_EI_MASK);
 		cluster_graph[tmp2].n_set->insert(tmp1, ((edgeinfo_t)w<<GC_EI_OFFSET)|GC_EI_MASK);
+#ifndef LH3_SAVE_MEMORY
 	}
 	edge_set.insert(tmp_e, w);
+#endif
 	return true;
 }
 cvertex_t ClusterGraph::assign_category_ext(cvertex_t v, unsigned char cat)
@@ -112,7 +116,9 @@ void ClusterGraph::clear()
 	max_vertices = 0;
 	conv_list1.rewind();
 	conv_list2.free();
+#ifndef LH3_SAVE_MEMORY
 	edge_set.free();
+#endif
 	for (cvertex_t v = 0; v < total_vertices; ++v)
 		cluster_graph[v].clear(v);
 }
@@ -219,8 +225,12 @@ cvertex_t ClusterGraph::flag_all()
 {
 	// initialize the opt and opt_ind in cluster_graph
 	if (gc_flag & GC_VERBOSE) {
+#ifndef LH3_SAVE_MEMORY
 		fprintf(stderr, "----- %u vertices, %u edges -----\n",
 				unsigned(conv_list2.size()), unsigned(edge_set.size()));
+#else
+		fprintf(stderr, "----- %u vertices -----\n", unsigned(conv_list2.size()));
+#endif
 		fflush(stderr);
 	}
 	
@@ -272,15 +282,20 @@ void ClusterGraph::output(FILE *fpout, cvertex_t start)
 {
 	extern char **bg_name_list;
 	CVertex *p;
-	cvertices_t::iterator iter, iter2;
+	cvertices_t::iterator iter;
+#ifndef LH3_SAVE_MEMORY
+	cvertices_t::iterator iter2;
+	weight_t tmp_w;
+#endif
 	cvertex_t flag = 0;
 	size_t count;
-	weight_t tmp_w;
 
 	for (p = cluster_graph; p < cluster_graph + max_vertices; ++p) {
 		if (p->v_set->size() && bg_name_list[conv_list1[p - cluster_graph]]) {
 			count = p->v_set->size();
+#ifndef LH3_SAVE_MEMORY
 			if (gc_flag & GC_DETAIL) fputc('>', fpout);
+#endif
 			// calculate some basic statistic in the v_set
 			if (count != 1) {
 				fprintf(fpout, "%u\t%u\t%d\t%.3f\t%u\t", flag + start, start,
@@ -290,6 +305,7 @@ void ClusterGraph::output(FILE *fpout, cvertex_t start)
 				if (isfilled(iter)) fprintf(fpout, "%s,", bg_name_list[conv_list1[iter->key]]);
 			fputc('\n', fpout);
 			++flag;
+#ifndef LH3_SAVE_MEMORY
 			if (!(gc_flag & GC_DETAIL)) continue;
 			// output detailed edge information
 			if (count == 1) { fprintf(fpout, "//\n"); continue; }
@@ -303,6 +319,7 @@ void ClusterGraph::output(FILE *fpout, cvertex_t start)
 				}
 			}
 			fprintf(fpout, "//\n");
+#endif
 		}
 	}
 }

@@ -9,10 +9,14 @@
 
 #ifdef GRAPH64                                                                                                                                 
 typedef bit32_t bvertex_t;
+#ifndef LH3_SAVE_MEMORY
 typedef bit64_t bedge_t;
+#endif
 #else                                                                                                                                          
 typedef bit16_t bvertex_t;
+#ifndef LH3_SAVE_MEMORY
 typedef bit32_t bedge_t;
+#endif
 #endif
 
 class BasicGraph
@@ -22,7 +26,9 @@ protected:
 	ClusterGraph cgraph;
 	bvertex_t max_vertices, total_vertices;
 	BVertex *basic_graph;
-	hash_map_misc<weight_t, bedge_t> edge_set;
+#ifndef LH3_SAVE_MEMORY
+	hash_map_misc<weight_t, bedge_t> edge_set; // C++ will call the destructor automatically.
+#endif
 	weight_t threshold;
 	bvertex_t flag_one(bvertex_t, bvertex_t, bvertex_t*, bvertex_t* = 0);
 public:

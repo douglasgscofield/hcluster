@@ -17,8 +17,10 @@ bool BasicGraph::add(bvertex_t v1, bvertex_t v2, weight_t w)
 {
 	if (v1 == v2) return false;
 	if (w >= threshold) {
+#ifndef LH3_SAVE_MEMORY
 		bedge_t tmp = cal_edge(v1, v2);
 		weight_t tmp_w;
+#endif
 		bvertex_t tmp1, tmp2;
 		tmp1 = (v1 > v2)? v1 : v2;
 		if (tmp1 + 1 > max_vertices) max_vertices = tmp1 + 1;
@@ -29,13 +31,17 @@ bool BasicGraph::add(bvertex_t v1, bvertex_t v2, weight_t w)
 			for (bvertex_t i = tmp2; i < total_vertices; ++i)
 				basic_graph[i].init();
 		}
+#ifndef LH3_SAVE_MEMORY
 		if (!(gc_flag & GC_NO_CLUSTER) && edge_set.find(tmp, &tmp_w)) {
 			if (w <= tmp_w) return false;
 		} else {
+#endif
 			basic_graph[v1].add(v2, w);
 			basic_graph[v2].add(v1, w);
+#ifndef LH3_SAVE_MEMORY
 		}
 		if (!(gc_flag & GC_NO_CLUSTER)) edge_set.insert(tmp, w);
+#endif
 		return true;
 	}
 	return false;
@@ -75,10 +81,14 @@ bvertex_t BasicGraph::main(FILE *fp)
 	cvertex_t count2;
 	extern char **bg_name_list;
 	extern size_t bg_nl_num;
-	
+
 	if (gc_flag & GC_VERBOSE)
+#ifndef LH3_SAVE_MEMORY
 		fprintf(stderr, "+++++ %u vertices, %u edges +++++\n",
 				unsigned(max_vertices), unsigned(edge_set.size()));
+#else
+		fprintf(stderr, "+++++ %u vertices +++++\n", unsigned(max_vertices));
+#endif
 	for (i = 0; i < max_vertices; i++)
 		basic_graph[i].flag = max_vertices + 1;
 	for (i = 0, flag = 0, tmp =0, tmp2 = 0; i < max_vertices; ++i) {

@@ -7,10 +7,14 @@
 
 #ifdef GRAPH64
 typedef bit32_t cvertex_t;
+#ifndef LH3_SAVE_MEMORY
 typedef bit64_t	cedge_t;
+#endif
 #else
 typedef bit16_t cvertex_t;
+#ifndef LH3_SAVE_MEMORY
 typedef bit32_t	cedge_t;
+#endif
 #endif
 
 typedef bit16_t edgeinfo_t;
@@ -59,7 +63,9 @@ protected:
 	weight_t threshold;
 	svector<cvertex_t> conv_list1;
 	hash_map_misc<cvertex_t, cvertex_t> conv_list2;
+#ifndef LH3_SAVE_MEMORY
 	hash_map_misc<weight_t, cedge_t> edge_set;
+#endif
 	void merge(cvertex_t v1, cvertex_t v2);
 	void init_opt();
 public:
