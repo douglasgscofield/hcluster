@@ -7,6 +7,7 @@ size_t gc_max_cluster_size = 500;
 int gc_min_edge_density = 176; // 176/255 = 0.69
 int gc_strict_outgroup_level = 2;
 int gc_once_fail_mode = 0;
+int gc_weight_resolution = 5;
 
 // test whether an edge is valid.
 inline int gc_verify_edge(edgeinfo_t ei, CVertex *p, CVertex *q)
@@ -216,7 +217,7 @@ void ClusterGraph::merge(cvertex_t v1, cvertex_t v2) // v1 < v2
 		}
 	}
 	// ok, let's see the role of tmp_opt
-	if (gc_once_fail_mode && tmp_opt > src1->opt) { // which means the best join is actually invalid.
+	if (gc_once_fail_mode && tmp_opt > src1->opt + (gc_weight_resolution<<GC_EI_OFFSET)) { // which means the best join is actually invalid.
 #ifdef LIH_DEBUG
 		printf("[merge] best join invalide between %d and %d (%x,%x,%d)\n", v1, v2, tmp_opt, src1->opt, tmp_optidx);
 		show_vertex(v1);

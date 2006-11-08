@@ -29,6 +29,7 @@ extern size_t gc_max_cluster_size;
 extern int gc_min_edge_density;
 extern int gc_strict_outgroup_level;
 extern int gc_once_fail_mode;
+extern int gc_weight_resolution;
 
 struct CVertex
 {
