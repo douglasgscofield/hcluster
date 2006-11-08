@@ -1,0 +1,265 @@
+2004-01-31 03:40  liheng
+
+	* basic_graph.cc: output remained vertices when '-c' is flagged
+
+2004-01-31 03:19  liheng
+
+	* basic.h, basic_graph.cc, cluster.cc: add codes for finding
+	  components
+
+2003-10-15 06:19  liheng
+
+	* cluster.cc, cluster_graph.cc, cluster_graph.h: add a option that
+	  controls the coefficient in comparison
+
+2003-10-11 15:00  liheng
+
+	* basic_graph.cc: enhance the speed
+
+2003-10-11 14:27  liheng
+
+	* cluster_graph.cc: fflush(stderr);
+
+2003-10-11 14:17  liheng
+
+	* basic_graph.cc, cluster_graph.cc, read_file.cc: add more verbose
+	  output fix a bug which incorrectly causes the last node to be
+	  discarded
+
+2003-10-11 13:27  liheng
+
+	* basic_graph.h, cluster_graph.cc, read_file.cc: tiny revise for
+	  64-bit compiler
+
+2003-10-11 13:14  liheng
+
+	* basic.h, basic_graph.cc, basic_graph.h, cluster.cc,
+	  cluster_graph.cc, cluster_graph.h, read_file.cc: add some debug
+	  information
+
+2003-10-04 14:39  liheng
+
+	* Makefile, basic.h, basic_graph.cc, basic_graph.h, cluster.cc,
+	  cluster_graph.cc, cluster_graph.h, read_file.cc: 0.3.0 rc1 is
+	  released.  It is much faster than previous version, and able to
+	  deal with larger input
+
+2003-10-04 14:36  liheng
+
+	* cluster.cc: remove useless option '-p'
+
+2003-10-04 14:34  liheng
+
+	* Makefile, basic_graph.cc, basic_graph.h, cluster.cc,
+	  cluster_graph.cc, cluster_graph.h, read_file.cc: [no log message]
+
+2003-10-04 12:04  liheng
+
+	* Makefile, basic_graph.cc, basic_graph.h, cluster.cc,
+	  cluster_graph.cc, cluster_graph.h, read_file.cc: merge the
+	  functions of basic_graph to cluster_graph.  prepare for further
+	  enhancement
+
+2003-10-04 12:02  liheng
+
+	* basic.h: some basic structure
+
+2003-09-27 14:25  liheng
+
+	* cluster_graph.cc, cluster_graph.h: a bug in initialization
+
+2003-09-27 12:45  liheng
+
+	* cluster_graph.cc: fix a bug in previous version
+
+2003-09-27 12:44  liheng
+
+	* cluster_graph.h: add a function
+
+2003-09-27 07:44  liheng
+
+	* basic_graph.cc, basic_graph.h, cluster.cc, cluster_graph.cc,
+	  cluster_graph.h, convert_raw.awk, gcluster.sh, read_file.cc:
+	  merged from release-0-1-0-update 0.2.0 is released.
+
+2003-09-27 07:30  liheng
+
+	* cluster_graph.cc: fix a bug in the first version
+
+2003-09-27 07:27  liheng
+
+	* cluster_graph.h: use default "="
+
+2003-09-27 04:10  liheng
+
+	* cluster_graph.cc: nothing realy important
+
+2003-09-27 04:09  liheng
+
+	* basic_graph.h: prepare for 64-bit edge. but now it is too slow
+
+2003-09-27 04:09  liheng
+
+	* cluster.cc: version
+
+2003-09-27 04:08  liheng
+
+	* cluster_graph.h: nothing
+
+2003-09-27 04:08  liheng
+
+	* read_file.cc: nothing important
+
+2003-09-27 01:49  liheng
+
+	* cluster.cc: version
+
+2003-09-27 01:49  liheng
+
+	* basic_graph.h, cluster.cc, cluster_graph.cc, cluster_graph.h:
+	  merged from release-0-1-1, and add a little revision
+
+2003-09-26 14:54  liheng
+
+	* basic_graph.cc: a bug
+
+2003-09-26 14:32  liheng
+
+	* basic_graph.cc, basic_graph.h, cluster.cc, cluster_graph.cc,
+	  cluster_graph.h, read_file.cc: the maximum number of vertices can
+	  now exceed 65356; more convenient input format; more statistic on
+	  the result
+
+2003-09-26 14:29  liheng
+
+	* convert_raw.awk: new input format
+
+2003-09-26 14:29  liheng
+
+	* gcluster.sh: no longer useful
+
+2003-09-25 08:32  liheng
+
+	* basic_graph.h, cluster_graph.cc: bugs caused by last modification
+
+2003-09-25 08:23  liheng
+
+	* cluster.cc: version
+
+2003-09-25 08:22  liheng
+
+	* cluster_graph.cc: fix a bug that does not cause any errors, but
+	  may cost a little time.
+
+2003-09-25 08:21  liheng
+
+	* basic_graph.h: permit to add the same edge many times. but only
+	  the maximum weight is reserved
+
+2003-09-25 08:09  liheng
+
+	* gc_test.inp: useless
+
+2003-07-08 11:50  liheng
+
+	* gc_test.inp: another test file for gcluster.sh
+
+2003-07-04 10:06  liheng
+
+	* cluster.cc: just version
+
+2003-07-04 10:05  liheng
+
+	* basic_graph.h, cluster.cc: enhance the robustness. previous
+	  version will cause infinit loop when col1 == col2
+
+2003-05-31 20:33  liheng
+
+	* gcluster.sh: A temperary interface to gcluster
+
+2003-05-26 10:50  liheng
+
+	* Makefile: no
+
+2003-05-26 09:52  liheng
+
+	* Makefile, cluster.cc: just some version information.	also change
+	  the program name as gcluster
+
+2003-05-26 09:49  liheng
+
+	* cluster_graph.cc: a bug disable the comparison between opt(s).
+	  there are also some bugs caused by hash, which is also fixed.
+
+2003-05-26 09:48  liheng
+
+	* basic_graph.h: a potential bug cause wrongly-calculated edge
+
+2003-05-26 09:47  liheng
+
+	* Makefile: just a option
+
+2003-05-25 08:00  liheng
+
+	* Makefile, cluster_graph.cc: just one line
+
+2003-05-19 08:24  liheng
+
+	* cluster.cc: a bug disabling -p
+
+2003-05-10 08:11  liheng
+
+	* cluster_graph.cc: add a flag to the first function for further
+	  usage
+
+2003-05-02 09:48  liheng
+
+	* cluster.cc: just the version
+
+2003-05-02 09:38  liheng
+
+	* convert_raw.awk, read_file.cc: change the input format; and add a
+	  program converting the original input.
+
+2003-05-01 11:25  liheng
+
+	* Makefile, basic_graph.cc, basic_graph.h, cluster.cc: add the
+	  usage
+
+2003-05-01 10:49  liheng
+
+	* Makefile, basic_graph.h, cluster.cc, cluster_graph.cc,
+	  cluster_graph.h, read_file.cc: the first version is available
+
+2003-04-29 09:59  liheng
+
+	* cluster_graph.cc: basic struct
+
+2003-04-26 14:07  liheng
+
+	* basic_graph.h, cluster_graph.cc, cluster_graph.h: return in add.
+	  basic struct has been built up
+
+2003-04-26 03:13  liheng
+
+	* basic_graph.h: unfinished
+
+2003-04-25 02:40  liheng
+
+	* Makefile, basic_graph.cc, basic_graph.h, read_file.cc: not
+	  finished
+
+2003-04-23 01:54  liheng
+
+	* Makefile: travial
+
+2003-04-17 04:09  liheng
+
+	* cluster.cc: I forget this one.
+
+2003-04-17 04:09  liheng
+
+	* Makefile, basic_graph.cc, basic_graph.h, block_visual.dat,
+	  raw_data.dat, read_file.cc: component finder is available. two
+	  test data file are added.
+
