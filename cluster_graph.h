@@ -35,13 +35,12 @@ struct CVertex
 	cvertex_t optidx;
 	edgeinfo_t opt, last;
 	unsigned char cat;
-	unsigned char is_closed; // is_closed is set by gc_verify_edge(). For ::merge(), optidx==max_vertices means the vertex is closed.
 	cvertices_t *v_set; // the contracted vertices
 	cneighbour_t *n_set; // the neighbours
 	inline void init(cvertex_t i)
 	{
 		opt = last = 0;
-		cat = is_closed = 0;
+		cat = 0;
 		v_set = new cvertices_t;
 		n_set = new cneighbour_t;
 		v_set->insert(i);
@@ -49,7 +48,7 @@ struct CVertex
 	inline void clear(cvertex_t i)
 	{
 		opt = last = 0;
-		cat = is_closed = 0;
+		cat = 0;
 		v_set->free(); // this is different from "delete v_set;"
 		n_set->free();
 		v_set->insert(i);

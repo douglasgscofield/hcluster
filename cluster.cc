@@ -11,14 +11,14 @@ void usage()
 {
 	fprintf(stderr, "\n");
 	fprintf(stderr, "Program : hcluster_sg (Hierarchically clustering on a sparse graph)\n");
-	fprintf(stderr, "Version : 0.4.2, on 06 November, 2006\n");
+	fprintf(stderr, "Version : 0.4.3, on 08 November, 2006\n");
 	fprintf(stderr, "Contact : Heng Li <lh3lh3@gmail.com>\n\n");
 	fprintf(stderr, "Usage   : hcluster_sg [options] [input_file]\n\n");
 	fprintf(stderr, "Options : -w NUM     minimum edge weight, default is %d\n", int(min_weight));
 	fprintf(stderr, "          -s FNUM    minimum saturation ratio, default is %.2f\n", min_satur);
 	fprintf(stderr, "          -m NUM     maximum size [%d]\n", gc_max_cluster_size);
 	fprintf(stderr, "          -o STRING  output file, default is stdout\n");
-	fprintf(stderr, "          -O         the once-fail-closed-forever mode (buggy!!!)\n");
+	fprintf(stderr, "          -O         the once-fail-closed-forever mode\n");
 #ifndef LH3_SAVE_MEMORY
 	fprintf(stderr, "          -d         detailed edge information\n");
 #endif

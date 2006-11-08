@@ -9,11 +9,10 @@ int gc_strict_outgroup_level = 2;
 int gc_once_fail_mode = 0;
 
 // test whether an edge is valid.
-inline int gc_verify_edge(edgeinfo_t ei, CVertex *p, CVertex *q, int is_set_closed = 0)
+inline int gc_verify_edge(edgeinfo_t ei, CVertex *p, CVertex *q)
 {
 	int retval = 1;
-	if (gc_once_fail_mode && (p->is_closed || q->is_closed)) retval = 0;
-	else if (p->v_set->size() > gc_max_cluster_size || q->v_set->size() > gc_max_cluster_size) retval = 0;
+	if (p->v_set->size() > gc_max_cluster_size || q->v_set->size() > gc_max_cluster_size) retval = 0;
 	else if ((ei&GC_EI_MASK) < gc_min_edge_density) retval = 0;
 	else if (p->cat && q->cat) {
 		if (gc_strict_outgroup_level == 3) { // the most stringent
@@ -27,7 +26,6 @@ inline int gc_verify_edge(edgeinfo_t ei, CVertex *p, CVertex *q, int is_set_clos
 			retval = (p->cat != 0x7 && q->cat != 0x7)? 1 : 0;
 		}
 	}
-	if (retval == 0 && gc_once_fail_mode && is_set_closed) p->is_closed = q->is_closed = 1;
 	return retval;
 }
 inline edgeinfo_t gc_cal_edge_info(edgeinfo_t ei1, edgeinfo_t ei2, size_t s1, size_t s2)
@@ -186,12 +184,18 @@ void ClusterGraph::merge(cvertex_t v1, cvertex_t v2) // v1 < v2
 	src2->n_set->free();
 	src2->optidx = max_vertices; src2->opt = 0; // close this vertex
 
-	// remove invalid edges, and reset affected "->opt_ind"
+	// remove invalid edges, and reset affected "->optidx"
+	edgeinfo_t tmp_opt = 0; // This will no less than src1->opt. It is set even if a join fails, but src1-opt will not.
+	cvertex_t tmp_optidx = max_vertices;
 	src1->optidx = max_vertices; src1->opt = 0;
 	for (iter = src1->n_set->begin(); iter != src1->n_set->end(); ++iter) {
 		if (!isfilled(iter)) continue;
 		p = cluster_graph + iter->key;
 		if (!gc_verify_edge(iter->val, src1, p)) { // delete this edge
+			if (iter->val > tmp_opt) {// see, tmp_opt is set here, before checking whether a join is valid.
+				tmp_opt = iter->val;
+				tmp_optidx = iter->key;
+			}
 			src1->n_set->erase(iter->key); // remove iter->key from v1
 			p->n_set->erase(v1); // remove v1 from iter->key
 			if (p->optidx == v1 || p->optidx == v2)
@@ -210,6 +214,21 @@ void ClusterGraph::merge(cvertex_t v1, cvertex_t v2) // v1 < v2
 				p->opt = iter->val;
 			}
 		}
+	}
+	// ok, let's see the role of tmp_opt
+	if (gc_once_fail_mode && tmp_opt > src1->opt) { // which means the best join is actually invalid.
+#ifdef LIH_DEBUG
+		printf("[merge] best join invalide between %d and %d (%x,%x,%d)\n", v1, v2, tmp_opt, src1->opt, tmp_optidx);
+		show_vertex(v1);
+#endif
+		for (iter = src1->n_set->begin(); iter != src1->n_set->end(); ++iter) {
+			if (!isfilled(iter)) continue;
+			p = cluster_graph + iter->key;
+			p->n_set->erase(v1);
+			if (p->optidx == v1) set_max(iter->key);
+		}
+		src1->optidx = max_vertices; // this node will be closed.
+		src1->n_set->free(); // clear its neighbours
 	}
 }
 void ClusterGraph::init(weight_t thres, double st)
@@ -247,8 +266,8 @@ cvertex_t ClusterGraph::flag_all()
 	cvertex_t count = 0;
 	
 #ifdef LIH_DEBUG
-	for (cvertex_t v = 0; v < max_vertices; v++)
-		show_vertex(v);
+//	for (cvertex_t v = 0; v < max_vertices; v++)
+//		show_vertex(v);
 #endif // LIH_DEBUG
 
 	do {
