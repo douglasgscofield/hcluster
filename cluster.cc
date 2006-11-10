@@ -11,7 +11,7 @@ void usage()
 {
 	fprintf(stderr, "\n");
 	fprintf(stderr, "Program : hcluster_sg (Hierarchically clustering on a sparse graph)\n");
-	fprintf(stderr, "Version : 0.4.4, on 08 November, 2006\n");
+	fprintf(stderr, "Version : 0.4.4-1, on 10 November, 2006\n");
 	fprintf(stderr, "Contact : Heng Li <lh3lh3@gmail.com>\n\n");
 	fprintf(stderr, "Usage   : hcluster_sg [options] [input_file]\n\n");
 	fprintf(stderr, "Options : -w NUM     minimum edge weight [%d]\n", int(min_weight));
@@ -65,10 +65,14 @@ int main(int argc, char *argv[])
 		}
 	}
 	if (optind < argc) {
-		fp = fopen(argv[optind], "r");
-		if (!fp) {
-			fprintf(stderr, "Error: Cannot open the file %s\n", argv[optind]);
-			exit(1);
+		if (argv[optind][0] == '-') {
+			fp = stdin;
+		} else {
+			fp = fopen(argv[optind], "r");
+			if (!fp) {
+				fprintf(stderr, "Error: Cannot open the file %s\n", argv[optind]);
+				exit(1);
+			}
 		}
 	} else usage();
 	BasicGraph bg;
@@ -77,7 +81,7 @@ int main(int argc, char *argv[])
 		gc_read_category(fpcat, &bg);
 		fclose(fpcat);
 	}
-	fclose(fp);
+	if (fp != stdin) fclose(fp);
 	bg.main(fpout);
 	free_all();
 	return 0;
