@@ -15,11 +15,8 @@ void gc_read_category(FILE *fp, BasicGraph *bg)
 	char tmp1[1024];
 	while (!feof(fp)) {
 		fscanf(fp, "%s%u", tmp1, &tmp);
-		if (!bg_name_hash.find(tmp1, &v)) {
-			fprintf(stderr, "[gc_read_category] '%s' is not present in the graph.\n", tmp1);
-			continue;
-		}
-		bg->assign_category(v, (unsigned char)tmp);
+		if (bg_name_hash.find(tmp1, &v))
+			bg->assign_category(v, (unsigned char)tmp);
 	}
 }
 

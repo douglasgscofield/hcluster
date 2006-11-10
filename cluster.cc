@@ -11,7 +11,7 @@ void usage()
 {
 	fprintf(stderr, "\n");
 	fprintf(stderr, "Program : hcluster_sg (Hierarchically clustering on a sparse graph)\n");
-	fprintf(stderr, "Version : 0.4.4-1, on 10 November, 2006\n");
+	fprintf(stderr, "Version : 0.4.4-2, on 10 November, 2006\n");
 	fprintf(stderr, "Contact : Heng Li <lh3lh3@gmail.com>\n\n");
 	fprintf(stderr, "Usage   : hcluster_sg [options] [input_file]\n\n");
 	fprintf(stderr, "Options : -w NUM     minimum edge weight [%d]\n", int(min_weight));
