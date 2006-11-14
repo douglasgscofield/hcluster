@@ -27,6 +27,7 @@ typedef hash_map_misc<edgeinfo_t, cvertex_t> cneighbour_t;
 
 extern size_t gc_max_cluster_size;
 extern int gc_min_edge_density;
+extern int gc_breaking_edge_density;
 extern int gc_strict_outgroup_level;
 extern int gc_once_fail_mode;
 extern int gc_weight_resolution;
@@ -61,10 +62,10 @@ class ClusterGraph
 	// in a cluster_graph, the index of the current vertex must be GREATER
 	// than its opt_ind.
 	inline void set_max(cvertex_t v);
+	inline void inactivate_vertex(cvertex_t v);
 protected:
 	cvertex_t total_vertices, max_vertices;
 	CVertex *cluster_graph;
-	weight_t threshold;
 	svector<cvertex_t> conv_list1;
 	hash_map_misc<cvertex_t, cvertex_t> conv_list2;
 #ifndef LH3_SAVE_MEMORY
@@ -78,7 +79,6 @@ public:
 #ifdef LIH_DEBUG
 	void show_vertex(cvertex_t);
 #endif // LIH_DEBUG
-	void init(weight_t thres, double);
 	bool add(cvertex_t v1, cvertex_t v2, weight_t w);
 	cvertex_t assign_category_ext(cvertex_t v, unsigned char cat); // "ext" means one should look up conv_list2 for the real vertex index
 	cvertex_t flag_all();

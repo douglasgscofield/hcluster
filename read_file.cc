@@ -20,14 +20,13 @@ void gc_read_category(FILE *fp, BasicGraph *bg)
 	}
 }
 
-size_t read_graph(FILE *fp, BasicGraph &bg, weight_t t, double st)
+size_t read_graph(FILE *fp, BasicGraph &bg)
 {
 	bit32_t tmp;
 	bvertex_t v1, v2;
 	char tmp1[1024], tmp2[1024];
 	int count = 0;
 
-	bg.init(t, st);
 	if (gc_flag & GC_VERBOSE) fprintf(stderr, "***** read file *****\n");
 	while (!feof(fp)) {
 		fscanf(fp, "%s%s%u", tmp1, tmp2, &tmp);

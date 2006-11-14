@@ -2,21 +2,18 @@
 #include <stdlib.h>
 #include "basic_graph.h"
 
+int gc_min_weight = 20;
+
 BasicGraph::~BasicGraph()
 {
 	for (size_t i = 0; i < total_vertices; ++i)
 		free(basic_graph[i].list);
 	free(basic_graph);
 }
-void BasicGraph::init(weight_t t, double s)
-{
-	threshold = t;
-	cgraph.init(t, s);
-}
 bool BasicGraph::add(bvertex_t v1, bvertex_t v2, weight_t w)
 {
 	if (v1 == v2) return false;
-	if (w >= threshold) {
+	if (w >= gc_min_weight) {
 #ifndef LH3_SAVE_MEMORY
 		bedge_t tmp = cal_edge(v1, v2);
 		weight_t tmp_w;

@@ -4,18 +4,15 @@
 #include "basic_graph.h"
 #include "cluster_graph.h"
 
-static weight_t min_weight = 20;
-static double min_satur = 0.69;
-
 void usage()
 {
 	fprintf(stderr, "\n");
 	fprintf(stderr, "Program : hcluster_sg (Hierarchically clustering on a sparse graph)\n");
-	fprintf(stderr, "Version : 0.4.4-2, on 10 November, 2006\n");
+	fprintf(stderr, "Version : %s, build %s\n", GC_VERSION, GC_BUILD);
 	fprintf(stderr, "Contact : Heng Li <lh3lh3@gmail.com>\n\n");
 	fprintf(stderr, "Usage   : hcluster_sg [options] [input_file]\n\n");
-	fprintf(stderr, "Options : -w NUM     minimum edge weight [%d]\n", int(min_weight));
-	fprintf(stderr, "          -s FNUM    minimum edge density between a join [%.2f]\n", min_satur);
+	fprintf(stderr, "Options : -w NUM     minimum edge weight [%d]\n", int(gc_min_weight));
+	fprintf(stderr, "          -s FNUM    minimum edge density between a join [%.2f]\n", 1.0*gc_min_edge_density/GC_EI_MASK);
 	fprintf(stderr, "          -m NUM     maximum size [%d]\n", gc_max_cluster_size);
 	fprintf(stderr, "          -o STRING  output file [stdout]\n");
 	fprintf(stderr, "          -c         only find single-linkage clusters (bypass h-cluster)\n");
@@ -25,6 +22,7 @@ void usage()
 	fprintf(stderr, "          -d         detailed edge information\n");
 #endif
 	fprintf(stderr, "\nAdvanced Options:\n\n");
+	fprintf(stderr, "          -b FNUM    breaking edge density [%.2f]\n", 1.0*gc_breaking_edge_density/GC_EI_MASK);
 	fprintf(stderr, "          -O         the once-fail-inactive-forever mode\n");
 	fprintf(stderr, "          -r         weight resolution for '-O' [%d]\n", gc_weight_resolution);
 	fprintf(stderr, "          -C FILE    category file\n");
@@ -39,13 +37,14 @@ int main(int argc, char *argv[])
 	FILE *fp = 0, *fpout = stdout;
 	FILE *fpcat = 0;
 #ifndef LH3_SAVE_MEMORY
-	while((c = getopt(argc, argv, "w:s:o:hdvcm:C:L:Or:")) >= 0) {
+	while((c = getopt(argc, argv, "w:s:o:hdvcm:C:L:Or:b:")) >= 0) {
 #else
-	while((c = getopt(argc, argv, "w:s:o:hvcm:C:L:Or:")) >= 0) {
+	while((c = getopt(argc, argv, "w:s:o:hvcm:C:L:Or:b:")) >= 0) {
 #endif
 		switch(c) {
-			case 'w': min_weight = atoi(optarg); break;
-			case 's': min_satur = atof(optarg); break;
+			case 'w': gc_min_weight = atoi(optarg); break;
+		    case 'b': gc_breaking_edge_density = int(GC_EI_MASK * atof(optarg) + 1.0); break;
+			case 's': gc_min_edge_density = int(GC_EI_MASK * atof(optarg) + 1.0); break;
 			case 'm': gc_max_cluster_size = atoi(optarg); break;
 			case 'o': fpout = fopen(optarg, "w+"); break;
 #ifndef LH3_SAVE_MEMORY
@@ -76,7 +75,7 @@ int main(int argc, char *argv[])
 		}
 	} else usage();
 	BasicGraph bg;
-	read_graph(fp, bg, min_weight, min_satur);
+	read_graph(fp, bg);
 	if (fpcat) {
 		gc_read_category(fpcat, &bg);
 		fclose(fpcat);
