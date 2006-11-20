@@ -3,7 +3,7 @@
 
 #include <malloc.h>
 #include <stdio.h>
-#include "hash_misc.h"
+#include "stdhash.H"
 #include "basic.h"
 #include "cluster_graph.h"
 

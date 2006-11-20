@@ -1,7 +1,7 @@
 #ifndef CLUSTER_GRAPH_H_
 #define CLUSTER_GRAPH_H_
 
-#include "hash_misc.h"
+#include "stdhash.H"
 #include "svector.h"
 #include "basic.h"
 
@@ -23,7 +23,7 @@ typedef bit16_t edgeinfo_t;
 #define GC_EI_MASK_float	255.0
 
 typedef hash_set_misc<cvertex_t> cvertices_t;
-typedef hash_map_misc<edgeinfo_t, cvertex_t> cneighbour_t;
+typedef hash_map_misc<cvertex_t, edgeinfo_t> cneighbour_t;
 
 extern size_t gc_max_cluster_size;
 extern int gc_min_edge_density;

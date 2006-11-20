@@ -2,8 +2,7 @@
 #define BASIC_H_
 
 #include <malloc.h>
-#include "hash_misc.h"
-#include "hash_char.h"
+#include "stdhash.H"
 #include "svector.h"
 
 const int BG_BLOCK_SIZE = 32;

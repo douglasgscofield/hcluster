@@ -4,7 +4,7 @@ CFLAGS=		-g -Wall -O2 #-pg
 CXXFLAGS=	$(CFLAGS)
 DFLAGS=		-DLH3_SAVE_MEMORY -DGRAPH64 #-DLIH_DEBUG
 OBJS=		cluster_graph.o read_file.o basic_graph.o
-VERSION=	0.5.0
+VERSION=	0.5.1
 GCVERSION=	-DGC_VERSION="\"$(VERSION)\"" -DGC_BUILD=\"`date +%d%b%Y`\"
 
 .SUFFIXES:.c .o .cc

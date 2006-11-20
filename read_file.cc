@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "basic_graph.h"
-#include "hash_char.h"
 
 size_t bg_nl_num, bg_nl_max;
 char **bg_name_list = 0;
