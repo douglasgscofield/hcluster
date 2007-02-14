@@ -1,7 +1,7 @@
 #ifndef LIH_SVECTOR_H_
 #define LIH_SVECTOR_H_
 
-#include <malloc.h>
+#include <stdlib.h>
 
 #ifndef LIH_BLOCK_SIZE
 #define LIH_BLOCK_SIZE 256

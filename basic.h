@@ -1,7 +1,7 @@
 #ifndef BASIC_H_
 #define BASIC_H_
 
-#include <malloc.h>
+#include <stdlib.h>
 #include "stdhash.H"
 #include "svector.h"
 
