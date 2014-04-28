@@ -1,0 +1,7 @@
+*.o
+hcluster_sg
+gmon.*
+*~
+.DS_Store
+._*
+
