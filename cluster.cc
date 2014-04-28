@@ -13,7 +13,7 @@ void usage()
 	fprintf(stderr, "Usage   : hcluster_sg [options] [input_file]\n\n");
 	fprintf(stderr, "Options : -w NUM     minimum edge weight [%d]\n", int(gc_min_weight));
 	fprintf(stderr, "          -s FNUM    minimum edge density between a join [%.2f]\n", 1.0*gc_min_edge_density/GC_EI_MASK);
-	fprintf(stderr, "          -m NUM     maximum size [%d]\n", gc_max_cluster_size);
+	fprintf(stderr, "          -m NUM     maximum size [%lu]\n", gc_max_cluster_size);
 	fprintf(stderr, "          -o STRING  output file [stdout]\n");
 	fprintf(stderr, "          -c         only find single-linkage clusters (bypass h-cluster)\n");
 	fprintf(stderr, "          -v         verbose mode\n");

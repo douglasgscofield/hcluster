@@ -408,7 +408,7 @@ public:
 	inline bool insert(const keytype_t &key) {
 		__lh3_hash_base_class<keytype_t>::rehash();
 		hashint_t i;
-		int ret = direct_insert_aux(key, this->n_capacity, this->keys, this->flags, &i);
+		int ret = this->direct_insert_aux(key, this->n_capacity, this->keys, this->flags, &i);
 		if (ret == 0) return true;
 		if (ret == 1) { ++(this->n_size); ++(this->n_occupied); }
 		else ++(this->n_size); // then ret == 2
@@ -489,7 +489,7 @@ public:
 	inline bool insert(const keytype_t &key, const valtype_t &val) {
 		rehash();
 		hashint_t i;
-		int ret = direct_insert_aux(key, this->n_capacity, this->keys, this->flags, &i);
+		int ret = this->direct_insert_aux(key, this->n_capacity, this->keys, this->flags, &i);
 		vals[i] = val;
 		if (ret == 0) return true;
 		if (ret == 1) { ++(this->n_size); ++(this->n_occupied); }
@@ -499,7 +499,7 @@ public:
 	inline bool insert(const keytype_t &key, valtype_t **q) {
 		rehash();
 		hashint_t i;
-		int ret = direct_insert_aux(key, this->n_capacity, this->keys, this->flags, &i);
+		int ret = this->direct_insert_aux(key, this->n_capacity, this->keys, this->flags, &i);
 		*q = vals + i;
 		if (ret == 0) return true;
 		if (ret == 1) { ++(this->n_size); ++(this->n_occupied); }
