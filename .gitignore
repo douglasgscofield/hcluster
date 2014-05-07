@@ -2,6 +2,7 @@
 hcluster_sg
 gmon.*
 *~
+*.swp
 .DS_Store
 ._*
 
