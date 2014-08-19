@@ -9,7 +9,8 @@ void usage()
 	fprintf(stderr, "\n");
 	fprintf(stderr, "Program : hcluster_sg (Hierarchically clustering on a sparse graph)\n");
 	fprintf(stderr, "Version : %s, build %s\n", GC_VERSION, GC_BUILD);
-	fprintf(stderr, "Contact : Heng Li <lh3lh3@gmail.com>\n\n");
+	fprintf(stderr, "Contact : Douglas Scofield <douglasgscofield@gmail.com> (repository maintainer)\n");
+	fprintf(stderr, "          Written by and Copyright (c) 2006 Heng Li <lh3lh3@gmail.com>\n\n");
 	fprintf(stderr, "Usage   : hcluster_sg [options] [input_file]\n\n");
 	fprintf(stderr, "Options : -w NUM     minimum edge weight [%d]\n", int(gc_min_weight));
 	fprintf(stderr, "          -s FNUM    minimum edge density between a join [%.2f]\n", 1.0*gc_min_edge_density/GC_EI_MASK);

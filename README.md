@@ -7,9 +7,11 @@ My clone of the sourceforge subdirectory for **hcluster_sg**, Heng Li's tool for
 ```
 $ ./hcluster_sg
 
+
 Program : hcluster_sg (Hierarchically clustering on a sparse graph)
-Version : 0.5.1, build 28Apr2014
-Contact : Heng Li <lh3lh3@gmail.com>
+Version : 0.5.1, build 19Aug2014
+Contact : Douglas Scofield <douglasgscofield@gmail.com> (repository maintainer)
+          Written by and Copyright (c) 2006 Heng Li <lh3lh3@gmail.com>
 
 Usage   : hcluster_sg [options] [input_file]
 
@@ -28,6 +30,7 @@ Advanced Options:
           -r         weight resolution for '-O' [5]
           -C FILE    category file
           -L NUM     stringent level ('3' is the strictest) [2]
+
 ```
 
 <hr>
