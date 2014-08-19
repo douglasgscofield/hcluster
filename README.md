@@ -7,7 +7,6 @@ My clone of the sourceforge subdirectory for **hcluster_sg**, Heng Li's tool for
 ```
 $ ./hcluster_sg
 
-
 Program : hcluster_sg (Hierarchically clustering on a sparse graph)
 Version : 0.5.1, build 19Aug2014
 Contact : Douglas Scofield <douglasgscofield@gmail.com> (repository maintainer)
