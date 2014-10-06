@@ -1,6 +1,6 @@
 CC=			gcc
 CXX=		g++
-CFLAGS=		-g -Wall -O2 #-pg
+CFLAGS=		-g -Wall -O3 #-pg
 CXXFLAGS=	$(CFLAGS)
 DFLAGS=		-DLH3_SAVE_MEMORY -DGRAPH64 #-DLIH_DEBUG
 OBJS=		cluster_graph.o read_file.o basic_graph.o
