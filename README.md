@@ -29,7 +29,6 @@ Advanced Options:
           -r         weight resolution for '-O' [5]
           -C FILE    category file
           -L NUM     stringent level ('3' is the strictest) [2]
-
 ```
 
 <hr>
@@ -119,7 +118,38 @@ $ ./hcluster_sg -C exam-1.cat exam-1.txt
 9	0	0	1.000	0	1	102,
 ```
 
-Reading over Heng Li's thesis, these categories may establish an unrooted constraint tree on the clusters... perhaps those with the same bit set > 1 should be in separate clusters... I can't see my way through the semantics just now. 
+Reading over Heng Li's thesis, these categories may establish an unrooted constraint tree on the clusters... perhaps those with the same bit set > 1 should be in separate clusters... I can't see my way through the semantics just now.
+
+#### More categories notes
+
+From <https://www.biostars.org/p/70008/>:
+
+The original algorithm for Orthomcl didn't do any adhoc weighing of the species
+in the sets, although this might have changed. There is an alternative to
+orthomcl that does take into account ingroup and outgroup species, which is to
+use hcluster_sg to do the clustering for you blast scores:
+
+http://treesoft.svn.sourceforge.net/viewvc/treesoft/branches/lh3/hcluster/
+
+Click on the Download GNU tarball at the bottom of the page.
+
+The input file is an A.B.C format where protein A and B are followed by the
+blast score or evalue (scaled from, say, 0-100) and another file, optionally,
+which is the "categories" file. This software allows you to define these
+"categories", see exam-1.cat as an example. In these categories, you can split
+your sets into species that are very close together and species that can be
+called outgroups, and outgroups can also have different levels. So ingroups for
+close subgroups, then outgroups of different levels, will be taken into account
+when doing the clustering, so that you are not leaving too many outgroup
+proteins behind just because they are more distant in the phylogenetic tree
+than the ingroup species.
+
+The hcluster_sg software was (I think still is) the software used in the
+EnsemblCompara GeneTrees pipeline: it scales really well and it's used for
+trees that encompass the whole tree of life, including eukarya, prokarya and
+archaea, and produces very decent protein clusters given the right categories.
+
+
 
 ## Output file formats
 
