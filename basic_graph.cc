@@ -101,7 +101,7 @@ bvertex_t BasicGraph::main(FILE *fp)
 				free(bg_name_list[rst[j]]);
 				bg_name_list[rst[j]] = 0; // flag used
 			}
-			putchar('\n');
+			fputc('\n', fp);
 			++flag;
 			continue;
 		}
