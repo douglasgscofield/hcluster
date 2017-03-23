@@ -95,9 +95,9 @@ bvertex_t BasicGraph::main(FILE *fp)
 		tmp += count;
 		if (count == 1)	continue;
 		if (gc_flag & GC_NO_CLUSTER) { // no cluster
-			printf("%d\t%d\t", flag, count);
+			fprintf(fp, "%d\t%d\t", flag, count);
 			for (j = 0; j < count; ++j) {
-				printf("%s,", bg_name_list[rst[j]]);
+				fprintf(fp, "%s,", bg_name_list[rst[j]]);
 				free(bg_name_list[rst[j]]);
 				bg_name_list[rst[j]] = 0; // flag used
 			}
@@ -133,7 +133,7 @@ bvertex_t BasicGraph::main(FILE *fp)
 	if (gc_flag & GC_NO_CLUSTER) {
 		for (i = 0; i < bg_nl_num; ++i) // output remained vertices
 			if (bg_name_list[i])
-				printf("%d\t1\t%s,\n", flag++, bg_name_list[i]);
+				fprintf(fp, "%d\t1\t%s,\n", flag++, bg_name_list[i]);
 		free_all();
 		exit(0);
 	}
