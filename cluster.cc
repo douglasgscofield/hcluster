@@ -13,8 +13,8 @@ void usage()
 	fprintf(stderr, "          Written by and Copyright (c) 2006 Heng Li <lh3lh3@gmail.com>\n\n");
 	fprintf(stderr, "Usage   : hcluster_sg [options] [input_file]\n\n");
 	fprintf(stderr, "Options : -w NUM     minimum edge weight [%d]\n", int(gc_min_weight));
-	fprintf(stderr, "          -s FNUM    minimum edge density between a join [%.2f]\n", 1.0*gc_min_edge_density/GC_EI_MASK);
-	fprintf(stderr, "          -m NUM     maximum size [%lu]\n", gc_max_cluster_size);
+	fprintf(stderr, "          -s FNUM    minimum edge density between a join (only for hierarchical clustering) [%.2f]\n", 1.0*gc_min_edge_density/GC_EI_MASK);
+	fprintf(stderr, "          -m NUM     maximum size (only for hierarchical clustering) [%lu]\n", gc_max_cluster_size);
 	fprintf(stderr, "          -o STRING  output file [stdout]\n");
 	fprintf(stderr, "          -c         only find single-linkage clusters (bypass h-cluster)\n");
 	fprintf(stderr, "          -v         verbose mode\n");
@@ -22,7 +22,7 @@ void usage()
 #ifndef LH3_SAVE_MEMORY
 	fprintf(stderr, "          -d         detailed edge information\n");
 #endif
-	fprintf(stderr, "\nAdvanced Options:\n\n");
+	fprintf(stderr, "\nAdvanced Options (only for hierarchical clustering):\n\n");
 	fprintf(stderr, "          -b FNUM    breaking edge density [%.2f]\n", 1.0*gc_breaking_edge_density/GC_EI_MASK);
 	fprintf(stderr, "          -O         the once-fail-inactive-forever mode\n");
 	fprintf(stderr, "          -r         weight resolution for '-O' [%d]\n", gc_weight_resolution);

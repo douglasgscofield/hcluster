@@ -15,14 +15,14 @@ Contact : Douglas Scofield <douglasgscofield@gmail.com> (repository maintainer)
 Usage   : hcluster_sg [options] [input_file]
 
 Options : -w NUM     minimum edge weight [20]
-          -s FNUM    minimum edge density between a join [0.50]
-          -m NUM     maximum size [500]
+          -s FNUM    minimum edge density between a join (only for hierarchical clustering) [0.50]
+          -m NUM     maximum size (only for hierarchical clustering) [500]
           -o STRING  output file [stdout]
           -c         only find single-linkage clusters (bypass h-cluster)
           -v         verbose mode
           -h         help
 
-Advanced Options:
+Advanced Options (only for hierarchical clustering):
 
           -b FNUM    breaking edge density [0.10]
           -O         the once-fail-inactive-forever mode
