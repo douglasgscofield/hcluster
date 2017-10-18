@@ -156,7 +156,7 @@ archaea, and produces very decent protein clusters given the right categories.
 Output files contain several TAB-separated columns.  With default hierarchical clustering, the output format contains seven columns.
 
 1. Cluster ID
-2. Unknown
+2. Unknown, perhaps super cluster ID matches with column 1?
 3. Unknown, perhaps mean weight within the cluster?
 4. Unknown, perhaps cluster cutoff?
 5. The final bitwise set of categories for the cluster
